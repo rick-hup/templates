@@ -12,7 +12,6 @@ export default defineConfig({
     vue(),
     vueJsx(),
     dts({
-      tsconfigPath: 'tsconfig.build.json',
       cleanVueFileName: true,
       exclude: ['src/test/**', 'src/**/story/**', 'src/**/*.story.vue'],
     }),
@@ -24,31 +23,46 @@ export default defineConfig({
   },
   build: {
     lib: {
-      name: 'radix-vue',
+      name: 'motion-number-vue',
       fileName: (format, name) => {
         return `${name}.${format === 'es' ? 'js' : 'umd.cjs'}`
       },
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
       },
+      
     },
+    minify:true,
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library (Vue)
-      external: ['vue',
+      external: ['vue', 'motion-v'],
+      output: [
+        {
+          format: 'es',
+          globals: {
+            vue: 'Vue',
+          },
+          entryFileNames(chunkInfo) {
+            return '[name].mjs'
+          },
+          dir: './dist/es',
+          // exports: 'named',
+          // preserveModules: true,
+          // preserveModulesRoot: 'src',
+        },
+        {
+          format: 'cjs',
+          name: 'motion-number-vue',
+          globals: {
+            vue: 'Vue',
+          },
+          entryFileNames: '[name].js',
+          dir: 'dist/cjs',
+          exports: 'named',
+          esModule: true,
+        },
       ],
-      output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
-        globals: {
-          vue: 'Vue',
-        },
-        assetFileNames: (chunkInfo) => {
-          if (chunkInfo.name === 'style.css')
-            return 'index.css'
-          return chunkInfo.name as string
-        },
-      },
     },
   },
 })
